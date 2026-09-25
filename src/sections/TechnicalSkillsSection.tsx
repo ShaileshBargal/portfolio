@@ -17,7 +17,7 @@ const iconMap: Record<string, React.ElementType> = {
 
 const TechnicalSkillsSection: React.FC = () => {
   return (
-    <section id="skills" className="py-16 sm:py-20 relative overflow-hidden">
+    <section id="skills" className="py-16 sm:py-20 relative overflow-hidden scroll-mt-20">
       {/* Subtle ambient light */}
       <div className="absolute top-1/3 right-0 -mr-24 w-80 h-80 bg-blue-600/5 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-10 left-0 -ml-24 w-80 h-80 bg-violet-600/5 rounded-full blur-[120px] pointer-events-none" />

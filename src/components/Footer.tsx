@@ -23,6 +23,21 @@ const Footer: React.FC = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const handleFooterNav = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    e.preventDefault();
+    const targetId = href.replace(/^#/, '');
+    const el = document.getElementById(targetId);
+    if (el) {
+      const navHeight = 72;
+      const elementPosition = el.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - navHeight;
+      window.scrollTo({ top: Math.max(0, offsetPosition), behavior: 'smooth' });
+      if (window.location.hash !== href) {
+        window.history.pushState(null, '', href);
+      }
+    }
+  };
+
   return (
     <footer className="relative bg-slate-950 text-slate-400 border-t border-slate-900 pt-16 pb-12 overflow-hidden">
       {/* Subtle top ambient glow line */}
@@ -60,7 +75,8 @@ const Footer: React.FC = () => {
                 <a
                   key={link.href}
                   href={link.href}
-                  className="text-slate-400 hover:text-blue-400 transition-colors py-1 flex items-center gap-1.5 group"
+                  onClick={(e) => handleFooterNav(e, link.href)}
+                  className="text-slate-400 hover:text-blue-400 transition-colors py-1 flex items-center gap-1.5 group cursor-pointer"
                 >
                   <span className="w-1.5 h-1.5 rounded-full bg-slate-700 group-hover:bg-blue-400 transition-colors" />
                   <span>{link.label}</span>

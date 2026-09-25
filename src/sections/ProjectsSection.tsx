@@ -13,7 +13,7 @@ const GithubIcon = ({ className }: { className?: string }) => (
 );
 
 const ProjectsSection: React.FC = () => (
-  <section id="projects" className="py-16 sm:py-20 relative bg-slate-100/60 dark:bg-slate-900/40 transition-colors duration-300">
+  <section id="projects" className="py-16 sm:py-20 relative bg-slate-100/60 dark:bg-slate-900/40 transition-colors duration-300 scroll-mt-20">
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <SectionHeader
         badge="05 · Projects"

@@ -31,20 +31,25 @@ const itemVariants = {
 };
 
 const HeroSection: React.FC = () => {
-  const scrollToContact = () => {
-    document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
+  const scrollToTarget = (id: string) => {
+    const el = document.getElementById(id);
+    if (el) {
+      const navHeight = 72;
+      const elementPosition = el.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - navHeight;
+      window.scrollTo({ top: Math.max(0, offsetPosition), behavior: 'smooth' });
+      window.history.pushState(null, '', `#${id}`);
+    }
   };
-  const scrollToProjects = () => {
-    document.getElementById('projects')?.scrollIntoView({ behavior: 'smooth' });
-  };
-  const scrollDown = () => {
-    document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' });
-  };
+
+  const scrollToContact = () => scrollToTarget('contact');
+  const scrollToProjects = () => scrollToTarget('projects');
+  const scrollDown = () => scrollToTarget('about');
 
   return (
     <section
       id="hero"
-      className="relative min-h-screen flex items-center justify-center pt-20 sm:pt-24 pb-12 sm:pb-16 overflow-hidden"
+      className="relative min-h-screen flex items-center justify-center pt-20 sm:pt-24 pb-12 sm:pb-16 overflow-hidden scroll-mt-20"
     >
       {/* Ambient background */}
       <div className="absolute inset-0 -z-10">

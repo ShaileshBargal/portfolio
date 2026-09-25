@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Mail, MapPin, Phone, Copy, Check } from 'lucide-react';
+import { Mail, MapPin, Phone, Copy, Check, Send, ExternalLink, CheckCircle2 } from 'lucide-react';
 import SectionHeader from '../components/SectionHeader';
 import { contactInfo } from '../data/portfolioData';
 
@@ -12,6 +12,8 @@ const GmailIcon = ({ className }: { className?: string }) => (
 
 const ContactSection: React.FC = () => {
   const [copiedEmail, setCopiedEmail] = useState(false);
+  const [copiedMessage, setCopiedMessage] = useState(false);
+  const [statusMessage, setStatusMessage] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -25,25 +27,69 @@ const ContactSection: React.FC = () => {
     setTimeout(() => setCopiedEmail(false), 2500);
   };
 
-  const handleSendGmail = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const formatEmailPayload = () => {
     const { name, email, subject, message } = formData;
+    const cleanSubject = subject.trim()
+      ? `[Portfolio] ${subject.trim()} - from ${name.trim() || 'Visitor'}`
+      : `[Portfolio Inquiry] from ${name.trim() || 'Visitor'}`;
 
-    const emailSubject = encodeURIComponent(
-      subject.trim() ? `[Portfolio] ${subject.trim()} - from ${name.trim()}` : `[Portfolio Inquiry] from ${name.trim()}`
-    );
+    const cleanBody = `Hi Shailesh,\n\n${message.trim()}\n\n---\nSender Name: ${name.trim()}\nSender Email: ${email.trim()}\nSent via Portfolio Contact Form`;
 
-    const emailBody = encodeURIComponent(
-      `Hello Shailesh,\n\n${message.trim()}\n\n---\nSender Name: ${name.trim()}\nSender Email: ${email.trim()}`
-    );
+    return {
+      subject: cleanSubject,
+      body: cleanBody,
+      encodedSubject: encodeURIComponent(cleanSubject),
+      encodedBody: encodeURIComponent(cleanBody),
+    };
+  };
 
-    // Launch Gmail Web Composer in a new tab
-    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${contactInfo.email}&su=${emailSubject}&body=${emailBody}`;
+  // Primary action: Universal mailto: link that opens the default mail app on mobile (Gmail app, Apple Mail, Outlook) and PC
+  const handleSendMail = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const { encodedSubject, encodedBody } = formatEmailPayload();
+    const mailtoUrl = `mailto:${contactInfo.email}?subject=${encodedSubject}&body=${encodedBody}`;
+
+    setStatusMessage(`Opening your email client to send to ${contactInfo.email}...`);
+    
+    // Trigger mail client smoothly
+    window.location.href = mailtoUrl;
+
+    setTimeout(() => {
+      setStatusMessage('');
+    }, 6000);
+  };
+
+  // Secondary action: Opens Gmail Web composer in browser
+  const handleOpenGmailWeb = () => {
+    if (!formData.name.trim() || !formData.email.trim() || !formData.message.trim()) {
+      // If form isn't filled yet, open Gmail composer with just Shailesh's email
+      const simpleGmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${contactInfo.email}`;
+      window.open(simpleGmailUrl, '_blank', 'noopener,noreferrer');
+      return;
+    }
+
+    const { encodedSubject, encodedBody } = formatEmailPayload();
+    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${contactInfo.email}&su=${encodedSubject}&body=${encodedBody}`;
+    
+    setStatusMessage('Opening Gmail Web composer in a new tab...');
     window.open(gmailUrl, '_blank', 'noopener,noreferrer');
+
+    setTimeout(() => {
+      setStatusMessage('');
+    }, 6000);
+  };
+
+  // Copy full message content to clipboard
+  const handleCopyMessage = () => {
+    const { subject, body } = formatEmailPayload();
+    const textToCopy = `To: ${contactInfo.email}\nSubject: ${subject}\n\n${body}`;
+    navigator.clipboard.writeText(textToCopy);
+    setCopiedMessage(true);
+    setTimeout(() => setCopiedMessage(false), 2500);
   };
 
   return (
-    <section id="contact" className="py-16 sm:py-20 relative bg-slate-100/60 dark:bg-slate-900/40 border-t border-slate-200/90 dark:border-slate-800/50 transition-colors duration-300 overflow-hidden">
+    <section id="contact" className="py-16 sm:py-20 relative bg-slate-100/60 dark:bg-slate-900/40 border-t border-slate-200/90 dark:border-slate-800/50 transition-colors duration-300 overflow-hidden scroll-mt-20">
       {/* Ambient background glows */}
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-600/5 rounded-full blur-[140px] pointer-events-none" />
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-violet-600/5 rounded-full blur-[140px] pointer-events-none" />
@@ -70,14 +116,15 @@ const ContactSection: React.FC = () => {
                   Contact Information
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                  Have an opportunity or question? Feel free to connect directly.
+                  Have an opportunity or question? Reach out through any channel below.
                 </p>
               </div>
 
-              {/* Email Card with 1-click copy */}
+              {/* Email Card with 1-click copy & mailto */}
               <div className="group relative p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/90 dark:border-slate-700/60 hover:border-blue-500/40 transition-all flex items-center justify-between gap-3 shadow-xs">
                 <a
                   href={`mailto:${contactInfo.email}`}
+                  title="Send email directly"
                   className="flex items-center gap-3.5 min-w-0 flex-1"
                 >
                   <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
@@ -91,18 +138,28 @@ const ContactSection: React.FC = () => {
                   </div>
                 </a>
 
-                <button
-                  type="button"
-                  onClick={copyEmailToClipboard}
-                  title="Copy email to clipboard"
-                  className="p-2.5 rounded-xl bg-white dark:bg-slate-700 text-slate-500 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 border border-slate-200 dark:border-slate-600 shadow-xs hover:scale-105 transition-all shrink-0 cursor-pointer"
-                >
-                  {copiedEmail ? (
-                    <Check className="w-4 h-4 text-emerald-500" />
-                  ) : (
-                    <Copy className="w-4 h-4" />
-                  )}
-                </button>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <button
+                    type="button"
+                    onClick={copyEmailToClipboard}
+                    title="Copy email address"
+                    className="p-2.5 rounded-xl bg-white dark:bg-slate-700 text-slate-500 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 border border-slate-200 dark:border-slate-600 shadow-xs hover:scale-105 transition-all cursor-pointer"
+                  >
+                    {copiedEmail ? (
+                      <Check className="w-4 h-4 text-emerald-500" />
+                    ) : (
+                      <Copy className="w-4 h-4" />
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleOpenGmailWeb}
+                    title="Open in Gmail Web"
+                    className="p-2.5 rounded-xl bg-white dark:bg-slate-700 text-slate-500 dark:text-slate-300 hover:text-red-500 dark:hover:text-red-400 border border-slate-200 dark:border-slate-600 shadow-xs hover:scale-105 transition-all cursor-pointer"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
 
               {/* Phone Card */}
@@ -145,7 +202,7 @@ const ContactSection: React.FC = () => {
             className="lg:col-span-7"
           >
             <form
-              onSubmit={handleSendGmail}
+              onSubmit={handleSendMail}
               className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-slate-900/60 border border-slate-200/90 dark:border-slate-800 shadow-xl shadow-slate-900/5 space-y-4 relative"
             >
               <div className="mb-2">
@@ -153,9 +210,21 @@ const ContactSection: React.FC = () => {
                   Send a Message
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                  Have an opportunity or inquiry? Drop a message below and I will get back to you promptly.
+                  Fill in your details below and choose your preferred way to send the message.
                 </p>
               </div>
+
+              {/* Status Alert Notification */}
+              {statusMessage && (
+                <motion.div
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="p-3.5 rounded-2xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800/80 text-blue-800 dark:text-blue-300 text-xs font-semibold flex items-center gap-2.5"
+                >
+                  <CheckCircle2 className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
+                  <span>{statusMessage}</span>
+                </motion.div>
+              )}
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
@@ -219,15 +288,46 @@ const ContactSection: React.FC = () => {
                 />
               </div>
 
-              <div className="pt-2">
+              {/* Action Buttons */}
+              <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                {/* Primary Button: Standard / Mobile Mail App */}
                 <button
                   type="submit"
-                  className="w-full inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-xl font-bold text-sm text-white bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 shadow-lg shadow-blue-700/25 active:scale-98 transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-400 cursor-pointer"
+                  className="flex-1 inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-xl font-bold text-sm text-white bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 shadow-lg shadow-blue-700/25 active:scale-98 transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-400 cursor-pointer"
                 >
-                  <GmailIcon className="w-4.5 h-4.5" />
-                  <span>Send Message</span>
+                  <Send className="w-4 h-4" />
+                  <span>Send via Mail App</span>
+                </button>
+
+                {/* Secondary Button: Gmail Web */}
+                <button
+                  type="button"
+                  onClick={handleOpenGmailWeb}
+                  className="inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl font-bold text-sm text-slate-800 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 active:scale-98 transition-all shadow-xs focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-400 cursor-pointer"
+                  title="Open in Gmail Web in a new tab"
+                >
+                  <GmailIcon className="w-4.5 h-4.5 text-red-500" />
+                  <span>Gmail Web</span>
+                </button>
+
+                {/* Optional 1-click copy full message */}
+                <button
+                  type="button"
+                  onClick={handleCopyMessage}
+                  title="Copy pre-formatted message text to clipboard"
+                  className="inline-flex items-center justify-center p-3.5 rounded-xl text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 active:scale-98 transition-all shadow-xs focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-400 cursor-pointer"
+                >
+                  {copiedMessage ? (
+                    <Check className="w-4.5 h-4.5 text-emerald-500" />
+                  ) : (
+                    <Copy className="w-4.5 h-4.5" />
+                  )}
                 </button>
               </div>
+
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 text-center sm:text-left pt-1">
+                💡 Works on all devices: Opens your default mail client (Gmail, Apple Mail, Outlook) with your message pre-filled to <span className="font-semibold text-blue-600 dark:text-blue-400">{contactInfo.email}</span>.
+              </p>
             </form>
           </motion.div>
         </div>

@@ -18,7 +18,7 @@ const itemVariants = {
 };
 
 const AboutSection: React.FC = () => (
-  <section id="about" className="py-16 sm:py-20 relative overflow-hidden">
+  <section id="about" className="py-16 sm:py-20 relative overflow-hidden scroll-mt-20">
     {/* Background accents */}
     <div className="absolute top-0 right-0 -mr-20 -mt-20 w-72 h-72 bg-blue-600/5 rounded-full blur-[100px] pointer-events-none" />
     <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-72 h-72 bg-violet-600/5 rounded-full blur-[100px] pointer-events-none" />

@@ -6,7 +6,7 @@ import Badge from '../components/Badge';
 import { experience } from '../data/portfolioData';
 
 const ExperienceSection: React.FC = () => (
-  <section id="experience" className="py-16 sm:py-20 relative overflow-hidden">
+  <section id="experience" className="py-16 sm:py-20 relative overflow-hidden scroll-mt-20">
     {/* Ambient background accents */}
     <div className="absolute top-1/2 left-0 -translate-y-1/2 -ml-32 w-80 h-80 bg-blue-600/5 rounded-full blur-[120px] pointer-events-none" />
     <div className="absolute bottom-0 right-0 -mr-32 w-80 h-80 bg-violet-600/5 rounded-full blur-[120px] pointer-events-none" />
